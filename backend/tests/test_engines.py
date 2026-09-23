@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).parents[1]))
-from app.main import compare_to_baseline, calculate_calibration_gap, classify_operator_state, predict_task_time, calculate_proficiency, adjust_benchmark_for_context, evaluate_task_performance, evaluate_safety, calculate_benchmark_deviation, calculate_personal_deviation, recommendation
+from app.main import compare_to_baseline, calculate_calibration_gap, classify_operator_state, calibration_signal, predict_task_time, calculate_proficiency, adjust_benchmark_for_context, evaluate_task_performance, evaluate_safety, working_condition_limits, live_operator_guidance, calculate_benchmark_deviation, calculate_personal_deviation, recommendation
 
 def test_deviation():
     x=compare_to_baseline({'hazard_response':2.92},{'hazard_response':2.0})
@@ -64,3 +64,15 @@ def test_personal_deviation_small_and_large():
 def test_calibration_states():
     assert classify_operator_state(85,55)=='UNDERCONFIDENT'
     assert classify_operator_state(58,87)=='BLIND_SPOT'
+
+def test_calibration_signal_surfaces_overconfidence():
+    signal=calibration_signal(58,87)
+    assert signal['code']=='OVERCONFIDENCE_RISK'
+    assert signal['gap']==29
+
+def test_working_conditions_adjust_hazard_margin_and_predict_approach():
+    current={'proximity_distance_m':10,'weather':'rainy','visibility':'Good','ground_condition':'Wet','cycle_phase':'SWING'}
+    alerts=evaluate_safety({'proximity_distance_m':12,'weather':'rainy','visibility':'Good','ground_condition':'Wet'},current)
+    assert working_condition_limits(current)[0]==10
+    assert alerts[0]['type']=='PROXIMITY_APPROACHING'
+    assert live_operator_guidance(current,alerts)['source']=='rate-of-change'

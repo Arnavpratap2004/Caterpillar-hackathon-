@@ -37,3 +37,15 @@ def test_api_rejects_unknown_sim_module():
     response = client.post('/api/sim-attempts', json={'module_id': 'not-a-module', 'score': 80})
     assert response.status_code == 400
     assert response.json()['error']['code'] == 'unknown_module'
+
+
+def test_ml_down_review_preserves_recommendation(monkeypatch):
+    monkeypatch.setenv('ML_FORCE_DOWN', '1')
+    response = client.post('/api/jobs/T002-today/review', json={'transcript': 'I felt confident.'})
+    assert response.status_code == 202
+    body = response.json()
+    assert body['grade'] is None
+    assert body['needs_review'] is True
+    assert body['recommendation']['recommended_scenario'] == 'Proximity Hazard Response'
+    assert body['fallback_recommendation']['recommended_scenario'] == 'Proximity Hazard Response'
+    assert body['fallback_used'] is True

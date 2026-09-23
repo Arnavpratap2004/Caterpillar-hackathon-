@@ -39,6 +39,14 @@ def adjust_benchmark_for_context(benchmark, environment=None, machine_state=None
     maximum = float(benchmark.get('expected_duration_max', benchmark.get('max', 0)))
     return {'adjusted_min': round(minimum * (1 + factor), 1), 'adjusted_max': round(maximum * (1 + factor), 1), 'context_factor': factor, 'contributing_factors': contributors or ['normal conditions']}
 
+def calibration_signal(objective, confidence):
+    objective=float(objective); confidence=float(confidence); signed=round(confidence-objective,1); gap=round(abs(signed),1)
+    if signed>=20:
+        return {'code':'OVERCONFIDENCE_RISK','label':'Overconfidence risk','message':f'You rated this task {confidence:.0f}/100, while objective evidence scored {objective:.0f}/100.','confidence':confidence,'objective':objective,'gap':gap}
+    if signed<=-20:
+        return {'code':'UNDERCONFIDENCE','label':'Underconfidence','message':f'You rated this task {confidence:.0f}/100, while objective evidence scored {objective:.0f}/100.','confidence':confidence,'objective':objective,'gap':gap}
+    return {'code':'CALIBRATED','label':'Calibrated self-assessment','message':f'Your self-rating ({confidence:.0f}/100) is aligned with objective evidence ({objective:.0f}/100).','confidence':confidence,'objective':objective,'gap':gap}
+
 def calculate_benchmark_deviation(current_hours, adjusted_min, adjusted_max):
     midpoint=(float(adjusted_min)+float(adjusted_max))/2
     return round((float(current_hours)-midpoint)/midpoint*100,1) if midpoint else 0.0

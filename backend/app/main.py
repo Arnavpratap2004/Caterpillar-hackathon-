@@ -17,6 +17,10 @@ REVIEW_CONFIDENCE = 0.6
 MAX_TRANSCRIPT_CHARS = 10000
 IDLE_SECONDS_THRESHOLD = 60.0
 FUEL_PER_CYCLE_THRESHOLD_L = 5.0
+BASE_PROXIMITY_LIMIT_M = 8.0
+CONDITION_ADJUSTED_PROXIMITY_LIMIT_M = 10.0
+TILT_LIMIT_DEG = 6.0
+WET_TILT_LIMIT_DEG = 5.0
 DEMO_TASK_ID = 'T002-today'
 DEMO_TASK_SEED = 170923
 SUPPORTED_SIM_MODULES = {
@@ -39,7 +43,7 @@ CREATE TABLE IF NOT EXISTS operator_baselines (baseline_id INTEGER PRIMARY KEY A
 CREATE TABLE IF NOT EXISTS personal_operator_baselines (baseline_id INTEGER PRIMARY KEY AUTOINCREMENT, operator_id TEXT, scenario_id TEXT, average_task_time_hours REAL, average_cycle_time_sec REAL, average_hazard_response_sec REAL, average_efficiency REAL, average_safety REAL, average_control_precision REAL, consistency_score REAL, sample_count INTEGER, updated_at TEXT, UNIQUE(operator_id,scenario_id));
 CREATE TABLE IF NOT EXISTS task_benchmarks (benchmark_id INTEGER PRIMARY KEY AUTOINCREMENT, scenario_id TEXT UNIQUE, task_type TEXT, machine_type TEXT, domain TEXT, expected_duration_min REAL, expected_duration_max REAL, expected_cycle_time_min_sec REAL, expected_cycle_time_max_sec REAL, minimum_safety_score REAL, minimum_efficiency_score REAL, maximum_hazard_response_sec REAL, created_at TEXT);
 CREATE TABLE IF NOT EXISTS work_sessions (session_id TEXT PRIMARY KEY, operator_id TEXT, machine_id TEXT, task_id TEXT, started_at TEXT, ended_at TEXT, predicted_time_min REAL, actual_time_min REAL, overall_score REAL, safety_score REAL, efficiency_score REAL, status TEXT, data_json TEXT, telemetry_seed INTEGER, job_options_json TEXT DEFAULT '{}');
-CREATE TABLE IF NOT EXISTS sensor_events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, timestamp TEXT, ambient_temp_c REAL, humidity_pct REAL, wind_speed_kmh REAL, fuel_level_pct REAL, fuel_rate_lph REAL, engine_rpm REAL, engine_temp_c REAL, hydraulic_load_pct REAL, payload_pct REAL, seatbelt_fastened INTEGER, proximity_distance_m REAL, visibility TEXT, soil_type TEXT, ground_condition TEXT, cycle_phase TEXT, tilt_deg REAL, weather TEXT, idle_seconds REAL, fuel_per_cycle_l REAL, unusual_pattern INTEGER, gps_x REAL, gps_y REAL);
+CREATE TABLE IF NOT EXISTS sensor_events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, timestamp TEXT, ambient_temp_c REAL, humidity_pct REAL, wind_speed_kmh REAL, fuel_level_pct REAL, fuel_rate_lph REAL, engine_rpm REAL, engine_temp_c REAL, hydraulic_load_pct REAL, payload_pct REAL, seatbelt_fastened INTEGER, proximity_distance_m REAL, proximity_limit_m REAL DEFAULT 8, proximity_closing_speed_mps REAL DEFAULT 0, visibility TEXT, soil_type TEXT, ground_condition TEXT, cycle_phase TEXT, tilt_deg REAL, weather TEXT, idle_seconds REAL, fuel_per_cycle_l REAL, unusual_pattern INTEGER, gps_x REAL, gps_y REAL);
 CREATE TABLE IF NOT EXISTS machine_cycles (cycle_id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT, cycle_number INTEGER, phase TEXT, start_time TEXT, end_time TEXT, duration_sec REAL);
 CREATE TABLE IF NOT EXISTS hazard_events (hazard_id TEXT PRIMARY KEY, session_id TEXT, hazard_type TEXT, severity TEXT, trigger_time TEXT, response_time TEXT, response_duration_sec REAL, acknowledged INTEGER, suppressed INTEGER, escalated INTEGER, resolved INTEGER);
 CREATE TABLE IF NOT EXISTS reflections (reflection_id TEXT PRIMARY KEY, session_id TEXT, operator_id TEXT, text TEXT, self_confidence REAL, perceived_performance REAL, perceived_difficulty REAL, hazard_awareness REAL, llm_summary TEXT, created_at TEXT, strengths TEXT, weaknesses TEXT, mentioned_hazards TEXT);
@@ -78,6 +82,8 @@ def migrate_schema(cursor):
         ('sensor_events','idle_seconds','REAL DEFAULT 0'),
         ('sensor_events','fuel_per_cycle_l','REAL DEFAULT 0'),
         ('sensor_events','unusual_pattern','INTEGER DEFAULT 0'),
+        ('sensor_events','proximity_limit_m','REAL DEFAULT 8'),
+        ('sensor_events','proximity_closing_speed_mps','REAL DEFAULT 0'),
         ('sensor_events','visibility',"TEXT DEFAULT 'Good'"),
         ('sensor_events','soil_type',"TEXT DEFAULT ''"),
         ('sensor_events','ground_condition',"TEXT DEFAULT ''"),
@@ -154,6 +160,13 @@ def classify_operator_state(performance, confidence):
     return 'BLIND_SPOT'
 
 def calculate_calibration_gap(objective, confidence): return round(abs(float(objective)-float(confidence)),1)
+def calibration_signal(objective, confidence):
+    objective=float(objective); confidence=float(confidence); signed=round(confidence-objective,1); gap=round(abs(signed),1)
+    if signed>=20:
+        return {'code':'OVERCONFIDENCE_RISK','label':'Overconfidence risk','message':f'You rated this task {confidence:.0f}/100, while objective evidence scored {objective:.0f}/100. Rehearse the weakest safety response before the next shift.','confidence':confidence,'objective':objective,'gap':gap}
+    if signed<=-20:
+        return {'code':'UNDERCONFIDENCE','label':'Underconfidence','message':f'You rated this task {confidence:.0f}/100, while objective evidence scored {objective:.0f}/100. Your caution is stronger than the measured risk.','confidence':confidence,'objective':objective,'gap':gap}
+    return {'code':'CALIBRATED','label':'Calibrated self-assessment','message':f'Your self-rating ({confidence:.0f}/100) is aligned with objective evidence ({objective:.0f}/100).','confidence':confidence,'objective':objective,'gap':gap}
 def calculate_proficiency(m):
     score=round(float(m.get('performance',m.get('objective_score',70)))*.30+float(m.get('safety',80))*.20+float(m.get('efficiency',70))*.15+float(m.get('hazard_response',70))*.15+float(m.get('consistency',75))*.10+(100-float(m.get('calibration_gap',20)))*.10,1)
     return {'score':score,'level':'Novice' if score<50 else 'Developing' if score<70 else 'Proficient' if score<85 else 'Advanced'}
@@ -214,28 +227,62 @@ def adjust_benchmark_for_context(benchmark, environment=None, machine_state=None
 def predict_task_time_context(benchmark, personal_baseline, context=None, current_efficiency=82.0, machine_state=None):
     adjusted=adjust_benchmark_for_context(benchmark,(context or {}).get('environment',context or {}),(context or {}).get('machine_state',machine_state or {})); operator_factor=max(.92,min(1.15,1+(float(personal_baseline.get('average_efficiency',82))-float(current_efficiency))/400)); machine_factor=max(.95,min(1.12,1.0 if not machine_state or str(machine_state.get('status','Operational')).lower()=='operational' else 1.08)); predicted_min=round(adjusted['adjusted_min']*operator_factor*machine_factor,1); predicted_max=round(adjusted['adjusted_max']*operator_factor*machine_factor,1); return {'predicted_time':round((predicted_min+predicted_max)/2,1),'predicted_time_min':predicted_min,'predicted_time_max':predicted_max,'confidence':round(max(55,94-adjusted['context_factor']*100-abs(operator_factor-1)*100),0),'baseline_time':round((float(benchmark.get('expected_duration_min',benchmark.get('min',6)))+float(benchmark.get('expected_duration_max',benchmark.get('max',8))))/2,1),'context_adjustment':adjusted['context_adjustment_hours'],'operator_adjustment':round((operator_factor-1)*100,1),'machine_adjustment':round((machine_factor-1)*100,1),'top_factors':adjusted['contributing_factors']+(['operator efficiency'] if abs(operator_factor-1)>.02 else [])}
 
+def working_condition_limits(event):
+    event=event or {}
+    weather=str(event.get('weather','clear')).lower()
+    visibility=str(event.get('visibility','good')).lower()
+    ground=str(event.get('ground_condition','')).lower()
+    wet=weather in ('rain','rainy','wet','storm') or visibility in ('poor','reduced','low','fog') or any(x in ground for x in ('wet','mud'))
+    return (CONDITION_ADJUSTED_PROXIMITY_LIMIT_M if wet else BASE_PROXIMITY_LIMIT_M, WET_TILT_LIMIT_DEG if wet else TILT_LIMIT_DEG)
+
 def evaluate_safety(previous_event, current_event):
     previous_event=previous_event or {}; current_event=current_event or {}; alerts=[]
     phase=str(current_event.get('cycle_phase','')).upper(); moving=phase not in ('IDLE','PARKED','')
     belt=bool(current_event.get('seatbelt_fastened',True)); previous_belt=bool(previous_event.get('seatbelt_fastened',True))
     if moving and not belt and previous_belt:
         alerts.append({'type':'SEATBELT','severity':'HIGH','status':'OPEN','acknowledged':False,'resolution':'Seatbelt required while machine is moving.'})
-    distance=float(current_event.get('proximity_distance_m',99) or 99); previous_distance=float(previous_event.get('proximity_distance_m',99) or 99)
-    if distance<8 and previous_distance>=8:
-        alerts.append({'type':'PROXIMITY','severity':'HIGH','status':'OPEN','acknowledged':False,'resolution':'Person entered proximity zone.'})
-    elif distance<8 and distance<=previous_distance:
+    distance=float(current_event.get('proximity_distance_m',99) or 99); had_previous=bool(previous_event); previous_distance=float(previous_event.get('proximity_distance_m',distance) or distance)
+    proximity_limit,tilt_limit=working_condition_limits(current_event); previous_limit,_=working_condition_limits(previous_event)
+    closing_speed=round(max(0.0,previous_distance-distance),1)
+    if distance<proximity_limit and (not had_previous or previous_distance>=previous_limit):
+        alerts.append({'type':'PROXIMITY','severity':'HIGH','status':'OPEN','acknowledged':False,'resolution':f'Person entered the {proximity_limit:.0f}m condition-adjusted proximity zone.'})
+    elif distance<proximity_limit and distance<=previous_distance:
         alerts.append({'type':'PROXIMITY','severity':'CRITICAL','status':'ESCALATED','acknowledged':False,'resolution':'Hazard persists while distance is not recovering.'})
-    elif distance>=8 and previous_distance<8:
+    elif distance>=proximity_limit and previous_distance<previous_limit:
         alerts.append({'type':'PROXIMITY','severity':'LOW','status':'RESOLVED','acknowledged':True,'resolution':'Operator response increased separation.'})
-    tilt=float(current_event.get('tilt_deg',0) or 0); previous_tilt=float(previous_event.get('tilt_deg',0) or 0)
-    if tilt>=6 and previous_tilt<6: alerts.append({'type':'TILT','severity':'HIGH','status':'OPEN','acknowledged':False,'resolution':'Stabilize the machine on level ground.'})
-    elif tilt<4 and previous_tilt>=6: alerts.append({'type':'TILT','severity':'LOW','status':'RESOLVED','acknowledged':True,'resolution':'Machine attitude returned to a safe range.'})
-    weather=str(current_event.get('visibility','Good')).lower(); previous_weather=str(previous_event.get('visibility','Good')).lower()
-    if weather in ('poor','reduced','low','fog') and previous_weather not in ('poor','reduced','low','fog'):
+    elif distance>=proximity_limit and previous_distance>=previous_limit and closing_speed>=2:
+        alerts.append({'type':'PROXIMITY_APPROACHING','severity':'MEDIUM','status':'PREDICTED','acknowledged':False,'resolution':'Person is closing quickly; slow or stop before the proximity limit is crossed.'})
+    tilt=float(current_event.get('tilt_deg',0) or 0); previous_tilt=float(previous_event.get('tilt_deg',tilt) or tilt)
+    if tilt>=tilt_limit and (not had_previous or previous_tilt<tilt_limit): alerts.append({'type':'TILT','severity':'HIGH','status':'OPEN','acknowledged':False,'resolution':f'Stabilize the machine below {tilt_limit:.0f} degrees under current conditions.'})
+    elif tilt<max(3.0,tilt_limit-2) and previous_tilt>=tilt_limit: alerts.append({'type':'TILT','severity':'LOW','status':'RESOLVED','acknowledged':True,'resolution':'Machine attitude returned to a safe range.'})
+    visibility=str(current_event.get('visibility','Good')).lower(); previous_visibility=str(previous_event.get('visibility','Good')).lower(); poor=('poor','reduced','low','fog','night')
+    if visibility in poor and previous_visibility not in poor:
         alerts.append({'type':'WEATHER','severity':'MEDIUM','status':'OPEN','acknowledged':False,'resolution':'Reduce speed and confirm visibility before continuing.'})
-    elif weather not in ('poor','reduced','low','fog') and previous_weather in ('poor','reduced','low','fog'):
+    elif visibility not in poor and previous_visibility in poor:
         alerts.append({'type':'WEATHER','severity':'LOW','status':'RESOLVED','acknowledged':True,'resolution':'Visibility returned to normal.'})
+    weather=str(current_event.get('weather','clear')).lower(); previous_weather=str(previous_event.get('weather','clear')).lower(); wet_weather=('rain','rainy','wet','storm')
+    if weather in wet_weather and previous_weather not in wet_weather and visibility not in poor:
+        alerts.append({'type':'WEATHER','severity':'MEDIUM','status':'OPEN','acknowledged':False,'resolution':'Rain-adjusted hazard margins are active; reduce speed and confirm the work zone.'})
+    elif weather not in wet_weather and previous_weather in wet_weather and visibility not in poor:
+        alerts.append({'type':'WEATHER','severity':'LOW','status':'RESOLVED','acknowledged':True,'resolution':'Wet-weather operating margin is no longer active.'})
     return alerts
+
+def live_operator_guidance(event, alerts=None):
+    event=event or {}; alerts=alerts or []
+    types={alert.get('type') for alert in alerts}
+    if 'SEATBELT' in types or event.get('seatbelt_fastened') is False:
+        return {'headline':'Secure seatbelt before continuing','detail':'Movement is detected without a fastened seatbelt. Stop safely and secure the cab.','severity':'high','source':'safety rules'}
+    if 'PROXIMITY_APPROACHING' in types:
+        return {'headline':'Proximity hazard approaching','detail':f"A person is closing quickly. Slow or stop before the {(event.get('proximity_limit_m') or BASE_PROXIMITY_LIMIT_M):.0f}m condition-adjusted limit.",'severity':'medium','source':'rate-of-change'}
+    if 'PROXIMITY' in types or float(event.get('proximity_distance_m',99) or 99)<float(event.get('proximity_limit_m',BASE_PROXIMITY_LIMIT_M) or BASE_PROXIMITY_LIMIT_M):
+        return {'headline':'Person in work zone','detail':'Stop the cycle, confirm the person is clear, then resume only when separation is safe.','severity':'high','source':'safety rules'}
+    if str(event.get('visibility','')).lower() in ('poor','reduced','low','fog') or str(event.get('weather','')).lower() in ('rain','rainy','wet','storm'):
+        return {'headline':'Working conditions require caution','detail':'Rain or reduced visibility is active; use the adjusted hazard margin and reduce operating speed.','severity':'medium','source':'working conditions'}
+    if float(event.get('idle_seconds',0) or 0)>=IDLE_SECONDS_THRESHOLD:
+        return {'headline':'Idle time is elevated','detail':'If you are waiting on the truck, remain stopped; otherwise return to the cycle when the zone is clear.','severity':'medium','source':'efficiency rules'}
+    if event.get('unusual_pattern'):
+        return {'headline':'Unusual operating pattern detected','detail':'This frame differs from the seeded operator pattern. Check the work zone and machine state before continuing.','severity':'medium','source':'anomaly rules'}
+    return {'headline':'Operating normally','detail':'Telemetry is within the current task and working-condition profile.','severity':'normal','source':'telemetry'}
 
 def _duration_hours(metrics):
     for key in ('task_time_hours','actual_time_hours'):
@@ -478,6 +525,7 @@ def op_summary(id:str):
     p=row('SELECT * FROM performance_scores WHERE session_id="WS-DEMO"') or {}; c=row('SELECT * FROM calibration_results ORDER BY calibration_id DESC') or {}
     evaluation=evaluate_session('WS-DEMO') if id=='OP-001' else None; live=latest_telemetry('WS-DEMO'); machine_data=machine('M-320'); task_data=rows('SELECT status,COUNT(*) AS count FROM tasks WHERE operator_id=? GROUP BY status',(id,))
     current=evaluation.get('current_performance',{}) if evaluation else {}; latest_cal=row('SELECT * FROM calibration_results c LEFT JOIN work_sessions w ON w.session_id=c.session_id WHERE w.operator_id=? ORDER BY c.calibration_id DESC',(id,)); overall=float(evaluation.get('overall_score',0)) if evaluation else float(p.get('overall_score',0) or 0)
+    if evaluation and latest_cal: evaluation['calibration_signal']=calibration_signal(latest_cal.get('objective_score',evaluation.get('overall_score',0)),latest_cal.get('self_confidence',0))
     return {'operator':operator(id),'overall_score':overall,'safety':float(current.get('safety',p.get('safety',0)) or 0),'efficiency':float(current.get('efficiency',p.get('cycle_efficiency',0)) or 0),'situational_awareness':float(current.get('situational_awareness',p.get('situational_awareness',0)) or 0),'confidence_calibration':float(latest_cal.get('calibration_gap',0) if latest_cal else 0),'proficiency':evaluation.get('proficiency') if evaluation else None,'latest_evaluation':evaluation,'current_machine':{**machine_data,'telemetry':live},'site_conditions':{'ambient_temp_c':live['ambient_temp_c'],'humidity_pct':live['humidity_pct'],'wind_speed_kmh':live['wind_speed_kmh'],'visibility':live['visibility'],'soil_type':live['soil_type'],'ground_condition':live['ground_condition']},'task_progress':task_data}
 @app.get('/machine-domains')
 def machine_domains(): return [{'domain':x['domain'],'name':x['name'],'phases':json.loads(x['phases']),'primary_metrics':json.loads(x['primary_metrics'])} for x in rows('SELECT * FROM machine_domains ORDER BY domain')]
@@ -578,7 +626,11 @@ def benchmark(scenario_id:str): return row('SELECT * FROM task_benchmarks WHERE 
 @app.post('/performance/evaluate')
 def performance_evaluate(x:PerformanceEvaluateIn): return evaluate_session(x.session_id,x.current_metrics or None,x.context or None,x.scenario_id,x.operator_id)
 @app.get('/performance/evaluate/{session_id}')
-def performance_evaluate_get(session_id:str): return evaluate_session(session_id)
+def performance_evaluate_get(session_id:str):
+    result=evaluate_session(session_id)
+    cal=row('SELECT * FROM calibration_results WHERE session_id=? ORDER BY calibration_id DESC',(session_id,))
+    if cal: result['calibration_signal']=calibration_signal(cal.get('objective_score',result.get('overall_score',0)),cal.get('self_confidence',0))
+    return result
 @app.get('/performance/{operator_id}/benchmark-comparison')
 def benchmark_comparison(operator_id:str):
     if operator_id=='OP-001': evaluate_session('WS-DEMO')
@@ -604,9 +656,9 @@ def telemetry_value(session_id, tick):
     session=row('SELECT telemetry_seed,machine_id,operator_id,job_options_json FROM work_sessions WHERE session_id=?',(session_id,)) or {}
     seed=int(session.get('telemetry_seed') or (DEMO_TASK_SEED if session_id=='WS-DEMO' else 0)); demo=seed==DEMO_TASK_SEED
     phase=['ACQUIRE','LIFT','SWING','DUMP','RETURN'][tick%5]; ambient=34+math.sin((tick+seed%7)/10)*1.4; load=52+18*(phase in ('LIFT','SWING'))+math.sin(tick/4)*3; temp=76+(ambient-30)*.55+load*.045
-    proximity=12 if (tick+seed)%18 not in (14,15,16) else max(4,12-4*((tick+seed)%3)); responding=(tick+seed)%18 in (17,0)
-    proximity=proximity+5 if responding else proximity; seatbelt=not (demo and tick%40 in (8,9,10)); tilt=round(2+math.sin(tick/5)*1.2+(5 if demo and tick%55 in (30,31) else 0),1); weather='rainy' if demo else 'clear'; visibility='reduced' if demo and tick%60 in (30,31,32) else 'Good'
-    return {'timestamp':now(),'machine_id':session.get('machine_id') or 'M-320','operator_id':session.get('operator_id') or 'OP-001','ambient_temp_c':round(ambient,1),'humidity_pct':82 if demo else 58,'wind_speed_kmh':18 if demo else 12,'fuel_level_pct':round(max(0,62-tick*.03),1),'fuel_rate_lph':round(18+load*.06,1),'engine_rpm':1450+int(load*2),'engine_temp_c':round(temp,1),'hydraulic_load_pct':round(load,1),'payload_pct':68 if phase in ('LIFT','SWING') else 20,'seatbelt_fastened':seatbelt,'proximity_distance_m':proximity,'tilt_deg':tilt,'weather':weather,'visibility':visibility,'soil_type':'Rocky' if demo else 'Medium (Sandy)','ground_condition':'Hard' if demo else 'Dry','cycle_phase':phase,'idle_seconds':3 if phase=='RETURN' and tick%7==0 else 0,'fuel_per_cycle_l':round((18+load*.06)/max(1,1+(tick%5)),2),'unusual_pattern':bool(demo and tick%41==0),'gps_x':42+tick*.01,'gps_y':18+tick*.005}
+    phase_key=(tick+seed)%18; proximity=10.0 if demo and phase_key==14 else 9.0 if demo and phase_key==15 else 8.0 if demo and phase_key==16 else (12 if phase_key not in (14,15,16) else max(4,12-4*(phase_key%3))); responding=phase_key in (17,0)
+    proximity=proximity+5 if responding else proximity; seatbelt=not (demo and tick%40 in (8,9,10)); tilt=round(2+math.sin(tick/5)*1.2+(5 if demo and tick%55 in (30,31) else 0),1); weather='rainy' if demo else 'clear'; visibility='reduced' if demo and tick%60 in (30,31,32) else 'Good'; proximity_limit,_=working_condition_limits({'weather':weather,'visibility':visibility,'ground_condition':'Hard' if demo else 'Dry'})
+    return {'timestamp':now(),'machine_id':session.get('machine_id') or 'M-320','operator_id':session.get('operator_id') or 'OP-001','ambient_temp_c':round(ambient,1),'humidity_pct':82 if demo else 58,'wind_speed_kmh':18 if demo else 12,'fuel_level_pct':round(max(0,62-tick*.03),1),'fuel_rate_lph':round(18+load*.06,1),'engine_rpm':1450+int(load*2),'engine_temp_c':round(temp,1),'hydraulic_load_pct':round(load,1),'payload_pct':68 if phase in ('LIFT','SWING') else 20,'seatbelt_fastened':seatbelt,'proximity_distance_m':proximity,'proximity_limit_m':proximity_limit,'tilt_deg':tilt,'weather':weather,'visibility':visibility,'soil_type':'Rocky' if demo else 'Medium (Sandy)','ground_condition':'Hard' if demo else 'Dry','cycle_phase':phase,'idle_seconds':3 if phase=='RETURN' and tick%7==0 else 0,'fuel_per_cycle_l':round((18+load*.06)/max(1,1+(tick%5)),2),'unusual_pattern':bool(demo and tick%41==0),'gps_x':42+tick*.01,'gps_y':18+tick*.005}
 @app.get('/work/sessions/{id}/telemetry')
 def telemetry(id:str): return rows('SELECT * FROM sensor_events WHERE session_id=? ORDER BY timestamp DESC LIMIT 40',(id,)) or [telemetry_value(id,i) for i in range(12)]
 # Friendly workflow aliases used by the prototype walkthrough.
@@ -672,7 +724,7 @@ def reflection(x:ReflectionIn):
     else: explanation='Your self-assessment is aligned with the objective performance evidence.'
     execute('INSERT INTO calibration_results(session_id,objective_score,self_confidence,calibration_gap,state,explanation) VALUES (?,?,?,?,?,?)',(x.session_id,objective,analysis['self_confidence'],gap,state,explanation))
     next_step=recommendation(s['operator_id'],state=state,objective=objective)
-    return {'reflection':analysis,'objective_performance':objective,'calibration_gap':gap,'state':state,'explanation':explanation,'evaluation':evaluation,'recommendation':next_step}
+    return {'reflection':analysis,'objective_performance':objective,'calibration_gap':gap,'state':state,'explanation':explanation,'calibration_signal':calibration_signal(objective,analysis['self_confidence']),'evaluation':evaluation,'recommendation':next_step}
 def job_session(job_id, operator_id=None):
     requested=job_id; task_row=task(requested); owner=operator_id or task_row['operator_id']
     session=row('SELECT * FROM work_sessions WHERE task_id=? AND operator_id=? ORDER BY started_at DESC LIMIT 1',(canonical_task_id(requested),owner))
@@ -684,7 +736,7 @@ def seed_for_task(task_row):
 def api_grade(evaluation, analysis, recommendation_result):
     scores=evaluation.get('current_performance',{})
     jev={k:v for k,v in analysis.items() if k in ('jev_scores','expertise_level')}
-    return {'objective_score':evaluation['overall_score'],'overall_score':evaluation['overall_score'],'benchmark_status':evaluation['status'],'benchmark_deviation_pct':evaluation['benchmark_deviation_pct'],'personal_deviation_pct':evaluation['personal_deviation_pct'],'safety_score':scores.get('safety'),'efficiency_score':scores.get('efficiency'),'hazard_response_score':scores.get('hazard_response_score'),'scores':scores,'jev_scores':analysis.get('jev_scores',{}),'expertise_level':analysis.get('expertise_level'),'needs_review':bool(analysis.get('needs_review',False)),'weakest_subscore':min((('safety',scores.get('safety',100)),('efficiency',scores.get('efficiency',100)),('hazard_response',scores.get('hazard_response_score',100))),key=lambda item:item[1])[0],'coaching':evaluation.get('explanation'),'recommended_module':recommendation_result.get('recommended_scenario'),'objective_evaluation':evaluation}
+    return {'objective_score':evaluation['overall_score'],'overall_score':evaluation['overall_score'],'benchmark_status':evaluation['status'],'benchmark_deviation_pct':evaluation['benchmark_deviation_pct'],'personal_deviation_pct':evaluation['personal_deviation_pct'],'safety_score':scores.get('safety'),'efficiency_score':scores.get('efficiency'),'hazard_response_score':scores.get('hazard_response_score'),'scores':scores,'jev_scores':analysis.get('jev_scores',{}),'expertise_level':analysis.get('expertise_level'),'needs_review':bool(analysis.get('needs_review',False)),'calibration_signal':calibration_signal(evaluation['overall_score'],analysis.get('self_confidence',50)),'weakest_subscore':min((('safety',scores.get('safety',100)),('efficiency',scores.get('efficiency',100)),('hazard_response',scores.get('hazard_response_score',100))),key=lambda item:item[1])[0],'coaching':evaluation.get('explanation'),'recommended_module':recommendation_result.get('recommended_scenario'),'objective_evaluation':evaluation}
 
 @app.post('/api/jobs/{job_id}/start')
 def api_start_job(job_id:str, request:Request):
@@ -732,7 +784,8 @@ def api_review_job(job_id:str, x:ReviewIn, request:Request):
     evaluation=evaluate_session(session['session_id'], context=x.telemetry_summary or None, requested_operator=operator_id)
     if os.getenv('ML_FORCE_DOWN')=='1':
         execute('INSERT OR REPLACE INTO reflections(reflection_id,session_id,operator_id,text,created_at) VALUES (?,?,?,?,?)',(f'RF-{int(datetime.now().timestamp()*1000)}',session['session_id'],operator_id,x.transcript,now()))
-        return JSONResponse(status_code=202,content={'saved':True,'grade':None,'needs_review':True,'message':'Saved. Grading when grader is back.','session_id':session['session_id']})
+        fallback_recommendation=recommendation(operator_id)
+        return JSONResponse(status_code=202,content={'saved':True,'grade':None,'needs_review':True,'message':'Saved. Grading when grader is back.','session_id':session['session_id'],'recommendation':fallback_recommendation,'fallback_recommendation':fallback_recommendation,'fallback_used':True})
     analysis=get_provider().analyze(x.transcript) if (os.getenv('LLM_API_KEY') or os.getenv('OPENROUTER_API_KEY')) else fallback_reflection(x.transcript)
     reflection_id=f'RF-{int(datetime.now().timestamp()*1000)}'
     execute('INSERT OR REPLACE INTO reflections VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',(reflection_id,session['session_id'],operator_id,x.transcript,analysis['self_confidence'],analysis['perceived_performance'],analysis['perceived_difficulty'],analysis['hazard_awareness'],analysis['summary'],now(),json.dumps(analysis['strengths']),json.dumps(analysis['weaknesses']),json.dumps(analysis['mentioned_hazards'])))
@@ -839,11 +892,11 @@ def report(kind:str): return {'report':kind,'data':report_summary(),'generated_a
 def export_csv():
     data=report_summary(); output=io.StringIO(); w=csv.writer(output); w.writerow(['metric','value']); w.writerows(data.items()); return StreamingResponse(iter([output.getvalue()]),media_type='text/csv',headers={'Content-Disposition':'attachment; filename=smart-operator-report.csv'})
 def persist_live_telemetry(session_id,event,alerts):
-    execute('INSERT INTO sensor_events(session_id,timestamp,ambient_temp_c,humidity_pct,wind_speed_kmh,fuel_level_pct,fuel_rate_lph,engine_rpm,engine_temp_c,hydraulic_load_pct,payload_pct,seatbelt_fastened,proximity_distance_m,visibility,soil_type,ground_condition,cycle_phase,tilt_deg,weather,idle_seconds,fuel_per_cycle_l,unusual_pattern,gps_x,gps_y) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(session_id,event['timestamp'],event['ambient_temp_c'],event['humidity_pct'],event['wind_speed_kmh'],event['fuel_level_pct'],event['fuel_rate_lph'],event['engine_rpm'],event['engine_temp_c'],event['hydraulic_load_pct'],event['payload_pct'],int(event['seatbelt_fastened']),event['proximity_distance_m'],event['visibility'],event['soil_type'],event['ground_condition'],event['cycle_phase'],event.get('tilt_deg',0),event.get('weather','clear'),event.get('idle_seconds',0),event.get('fuel_per_cycle_l',0),int(event.get('unusual_pattern',False)),event['gps_x'],event['gps_y']))
+    execute('INSERT INTO sensor_events(session_id,timestamp,ambient_temp_c,humidity_pct,wind_speed_kmh,fuel_level_pct,fuel_rate_lph,engine_rpm,engine_temp_c,hydraulic_load_pct,payload_pct,seatbelt_fastened,proximity_distance_m,proximity_limit_m,proximity_closing_speed_mps,visibility,soil_type,ground_condition,cycle_phase,tilt_deg,weather,idle_seconds,fuel_per_cycle_l,unusual_pattern,gps_x,gps_y) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',(session_id,event['timestamp'],event['ambient_temp_c'],event['humidity_pct'],event['wind_speed_kmh'],event['fuel_level_pct'],event['fuel_rate_lph'],event['engine_rpm'],event['engine_temp_c'],event['hydraulic_load_pct'],event['payload_pct'],int(event['seatbelt_fastened']),event['proximity_distance_m'],event.get('proximity_limit_m',BASE_PROXIMITY_LIMIT_M),event.get('proximity_closing_speed_mps',0),event['visibility'],event['soil_type'],event['ground_condition'],event['cycle_phase'],event.get('tilt_deg',0),event.get('weather','clear'),event.get('idle_seconds',0),event.get('fuel_per_cycle_l',0),int(event.get('unusual_pattern',False)),event['gps_x'],event['gps_y']))
     for alert in alerts:
         alert_id=f'LIVE-{session_id}-{int(datetime.now().timestamp())}-{alert["type"]}'
         if alert['status']=='OPEN': execute('INSERT OR IGNORE INTO hazard_events(hazard_id,session_id,hazard_type,severity,trigger_time,acknowledged,suppressed,escalated,resolved) VALUES (?,?,?,?,?,?,?,?,?)',(alert_id,session_id,alert['type'].lower(),alert['severity'],event['timestamp'],0,0,0,0))
-        if alert['type'] in ('SEATBELT','PROXIMITY','TILT','WEATHER'): execute('INSERT OR IGNORE INTO incidents VALUES (?,?,?,?,?, ?,?)',(alert_id,session_id,alert['type'],alert['severity'],event['timestamp'],alert['status'],alert['resolution']))
+        if alert['type'] in ('SEATBELT','PROXIMITY','PROXIMITY_APPROACHING','TILT','WEATHER'): execute('INSERT OR IGNORE INTO incidents VALUES (?,?,?,?,?, ?,?)',(alert_id,session_id,alert['type'],alert['severity'],event['timestamp'],alert['status'],alert['resolution']))
 
 @app.get('/work/sessions/{id}/safety')
 def session_safety(id:str): return rows('SELECT * FROM incidents WHERE session_id=? ORDER BY timestamp DESC',(id,))
@@ -853,7 +906,7 @@ async def ws_work(ws:WebSocket,session_id:str):
     await ws.accept(); tick=0; previous={}
     try:
         while tick<180:
-            event=telemetry_value(session_id,tick); alerts=evaluate_safety(previous,event); persist_live_telemetry(session_id,event,alerts); event['safety_events']=alerts; await ws.send_json(event); previous=event; tick+=1; await asyncio.sleep(1)
+            event=telemetry_value(session_id,tick); previous_distance=float(previous.get('proximity_distance_m',event.get('proximity_distance_m',99)) or event.get('proximity_distance_m',99)); event['proximity_closing_speed_mps']=round(max(0.0,previous_distance-float(event.get('proximity_distance_m',99) or 99)),1); alerts=evaluate_safety(previous,event); persist_live_telemetry(session_id,event,alerts); event['safety_events']=alerts; event['operator_guidance']=live_operator_guidance(event,alerts); await ws.send_json(event); previous=event; tick+=1; await asyncio.sleep(1)
     except WebSocketDisconnect: pass
 
 if __name__=='__main__':
