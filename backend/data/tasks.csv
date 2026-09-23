@@ -1,0 +1,151 @@
+task_id,operator_id,machine_id,domain,task_type,site,scheduled_start,scheduled_end,status,baseline_duration_min
+T-001,OP-001,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-002,OP-002,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-003,OP-003,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-004,OP-004,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-005,OP-005,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-006,OP-006,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-007,OP-007,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-008,OP-008,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-009,OP-009,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-010,OP-010,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-011,OP-011,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-012,OP-012,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-013,OP-013,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-014,OP-014,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-015,OP-015,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-016,OP-016,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-017,OP-017,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-018,OP-018,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-019,OP-019,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-020,OP-020,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-021,OP-001,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-022,OP-002,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-023,OP-003,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-024,OP-004,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-025,OP-005,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-026,OP-006,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-027,OP-007,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-028,OP-008,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-029,OP-009,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-030,OP-010,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-031,OP-011,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-032,OP-012,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-033,OP-013,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-034,OP-014,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-035,OP-015,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-036,OP-016,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-037,OP-017,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-038,OP-018,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-039,OP-019,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-040,OP-020,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-041,OP-001,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-042,OP-002,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-043,OP-003,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-044,OP-004,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-045,OP-005,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-046,OP-006,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-047,OP-007,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-048,OP-008,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-049,OP-009,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-050,OP-010,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-051,OP-011,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-052,OP-012,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-053,OP-013,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-054,OP-014,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-055,OP-015,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-056,OP-016,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-057,OP-017,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-058,OP-018,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-059,OP-019,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-060,OP-020,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-061,OP-001,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-062,OP-002,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-063,OP-003,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-064,OP-004,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-065,OP-005,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-066,OP-006,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-067,OP-007,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-068,OP-008,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-069,OP-009,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-070,OP-010,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-071,OP-011,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-072,OP-012,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-073,OP-013,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-074,OP-014,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-075,OP-015,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-076,OP-016,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-077,OP-017,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-078,OP-018,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-079,OP-019,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-080,OP-020,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-081,OP-001,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-082,OP-002,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-083,OP-003,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-084,OP-004,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-085,OP-005,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-086,OP-006,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-087,OP-007,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-088,OP-008,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-089,OP-009,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-090,OP-010,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-091,OP-011,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-092,OP-012,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-093,OP-013,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-094,OP-014,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-095,OP-015,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-096,OP-016,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-097,OP-017,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-098,OP-018,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-099,OP-019,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-100,OP-020,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-101,OP-001,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-102,OP-002,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-103,OP-003,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-104,OP-004,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-105,OP-005,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-106,OP-006,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-107,OP-007,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-108,OP-008,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-109,OP-009,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-110,OP-010,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-111,OP-011,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-112,OP-012,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-113,OP-013,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-114,OP-014,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-115,OP-015,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-116,OP-016,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-117,OP-017,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-118,OP-018,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-119,OP-019,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-120,OP-020,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-121,OP-001,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-122,OP-002,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-123,OP-003,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-124,OP-004,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-125,OP-005,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-126,OP-006,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-127,OP-007,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-128,OP-008,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-129,OP-009,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-130,OP-010,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-131,OP-011,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-132,OP-012,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-133,OP-013,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-134,OP-014,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-135,OP-015,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-136,OP-016,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-137,OP-017,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-138,OP-018,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-139,OP-019,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Completed,45
+T-140,OP-020,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-141,OP-001,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Upcoming,60
+T-142,OP-002,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-143,OP-003,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Completed,60
+T-144,OP-004,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60
+T-145,OP-005,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site B,08:00,09:00,Upcoming,45
+T-146,OP-006,M-3,EXCAVATION_LOAD,Material Loading,Site A,08:00,09:00,Completed,60
+T-147,OP-007,M-5,HAUL_TRANSPORT,Haul Cycle,Site B,08:00,09:00,Completed,60
+T-148,OP-008,M-1,EXCAVATION_LOAD,Excavation — Trench Digging,Site A,08:00,09:00,Completed,45
+T-149,OP-009,M-3,EXCAVATION_LOAD,Material Loading,Site B,08:00,09:00,Upcoming,60
+T-150,OP-010,M-5,HAUL_TRANSPORT,Haul Cycle,Site A,08:00,09:00,Completed,60

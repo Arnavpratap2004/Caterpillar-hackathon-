@@ -1,0 +1,31 @@
+scenario_id,task_type,machine_type,domain,expected_duration_min,expected_duration_max,expected_cycle_time_min_sec,expected_cycle_time_max_sec,minimum_safety_score,minimum_efficiency_score,maximum_hazard_response_sec
+SCN-01,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-02,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-03,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-04,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-05,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-06,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-07,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-08,Material Loading,CAT 320 Excavator,EXCAVATION_LOAD,4,6,90,125,94,78,2.8
+SCN-09,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-10,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-11,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-12,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-13,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-14,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-15,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-16,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-17,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-18,Material Loading,CAT 320 Excavator,EXCAVATION_LOAD,4,6,90,125,94,78,2.8
+SCN-19,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-20,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-21,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-22,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-23,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-24,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-25,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-26,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5
+SCN-27,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-28,Material Loading,CAT 320 Excavator,EXCAVATION_LOAD,4,6,90,125,94,78,2.8
+SCN-29,Haul Cycle,CAT 777 Off-Highway Truck,HAUL_TRANSPORT,5,7,160,210,95,82,2.5
+SCN-30,Excavation — Trench Digging,CAT 320 Excavator,EXCAVATION_LOAD,6,8,135,160,95,80,2.5

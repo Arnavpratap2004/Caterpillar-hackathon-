@@ -1,0 +1,9 @@
+machine_id,model,machine_type,domain,status,engine_hours
+M-1,CAT 320 Excavator,Excavator,EXCAVATION_LOAD,Operational,3191
+M-2,CAT 323 Excavator,Excavator,EXCAVATION_LOAD,Operational,3305
+M-3,CAT 950 Wheel Loader,Wheel Loader,EXCAVATION_LOAD,Operational,5539
+M-4,Backhoe Loader,Backhoe Loader,EXCAVATION_LOAD,Operational,1617
+M-5,CAT 777 Off-Highway Truck,Haul Truck,HAUL_TRANSPORT,Operational,5997
+M-6,Articulated Hauler,Hauler,HAUL_TRANSPORT,Operational,3028
+M-7,CAT 777 Haul Truck,Haul Truck,HAUL_TRANSPORT,Operational,5864
+M-8,CAT 950 Loader,Wheel Loader,EXCAVATION_LOAD,Operational,4836

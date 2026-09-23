@@ -1,0 +1,31 @@
+scenario_id,name,domain,machine_type,difficulty,duration_min,target_skill,hazard_type
+SCN-01,Proximity Hazard Response,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Beginner,12,hazard_response,proximity
+SCN-02,Efficient Excavation,EXCAVATION_LOAD,CAT 320 Excavator,Intermediate,13,cycle_efficiency,none
+SCN-03,High-Load Operation,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Advanced,14,control_precision,none
+SCN-04,Night Operation Awareness,EXCAVATION_LOAD,CAT 320 Excavator,Beginner,15,situational_awareness,proximity
+SCN-05,Bucket Control,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Intermediate,16,load_handling,none
+SCN-06,Proximity Hazard Response,EXCAVATION_LOAD,CAT 320 Excavator,Advanced,17,hazard_response,none
+SCN-07,Efficient Excavation,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Beginner,18,cycle_efficiency,proximity
+SCN-08,High-Load Operation,EXCAVATION_LOAD,CAT 320 Excavator,Intermediate,19,control_precision,none
+SCN-09,Night Operation Awareness,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Advanced,20,situational_awareness,none
+SCN-10,Bucket Control,EXCAVATION_LOAD,CAT 320 Excavator,Beginner,21,load_handling,proximity
+SCN-11,Proximity Hazard Response,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Intermediate,22,hazard_response,none
+SCN-12,Efficient Excavation,EXCAVATION_LOAD,CAT 320 Excavator,Advanced,23,cycle_efficiency,none
+SCN-13,High-Load Operation,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Beginner,24,control_precision,proximity
+SCN-14,Night Operation Awareness,EXCAVATION_LOAD,CAT 320 Excavator,Intermediate,25,situational_awareness,none
+SCN-15,Bucket Control,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Advanced,12,load_handling,none
+SCN-16,Proximity Hazard Response,EXCAVATION_LOAD,CAT 320 Excavator,Beginner,13,hazard_response,proximity
+SCN-17,Efficient Excavation,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Intermediate,14,cycle_efficiency,none
+SCN-18,High-Load Operation,EXCAVATION_LOAD,CAT 320 Excavator,Advanced,15,control_precision,none
+SCN-19,Night Operation Awareness,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Beginner,16,situational_awareness,proximity
+SCN-20,Bucket Control,EXCAVATION_LOAD,CAT 320 Excavator,Intermediate,17,load_handling,none
+SCN-21,Proximity Hazard Response,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Advanced,18,hazard_response,none
+SCN-22,Efficient Excavation,EXCAVATION_LOAD,CAT 320 Excavator,Beginner,19,cycle_efficiency,proximity
+SCN-23,High-Load Operation,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Intermediate,20,control_precision,none
+SCN-24,Night Operation Awareness,EXCAVATION_LOAD,CAT 320 Excavator,Advanced,21,situational_awareness,none
+SCN-25,Bucket Control,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Beginner,22,load_handling,proximity
+SCN-26,Proximity Hazard Response,EXCAVATION_LOAD,CAT 320 Excavator,Intermediate,23,hazard_response,none
+SCN-27,Efficient Excavation,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Advanced,24,cycle_efficiency,none
+SCN-28,High-Load Operation,EXCAVATION_LOAD,CAT 320 Excavator,Beginner,25,control_precision,proximity
+SCN-29,Night Operation Awareness,HAUL_TRANSPORT,CAT 777 Off-Highway Truck,Intermediate,12,situational_awareness,none
+SCN-30,Bucket Control,EXCAVATION_LOAD,CAT 320 Excavator,Advanced,13,load_handling,none

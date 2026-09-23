@@ -1,0 +1,21 @@
+operator_id,name,experience_years,level,site,archetype
+OP-001,Raghav Sharma,7,Proficient,Site A,blind_spot
+OP-002,Operator 2,11,Proficient,Site B,new_cautious
+OP-003,Operator 3,2,Proficient,Site A,efficient_idle
+OP-004,Operator 4,1,Proficient,Site B,hazard_aware
+OP-005,Operator 5,12,Proficient,Site A,experienced_safe
+OP-006,Operator 6,5,Proficient,Site B,blind_spot
+OP-007,Operator 7,4,Proficient,Site A,new_cautious
+OP-008,Operator 8,4,Proficient,Site B,efficient_idle
+OP-009,Operator 9,3,Proficient,Site A,hazard_aware
+OP-010,Operator 10,12,Proficient,Site B,experienced_safe
+OP-011,Operator 11,2,Proficient,Site A,blind_spot
+OP-012,Operator 12,11,Proficient,Site B,new_cautious
+OP-013,Operator 13,12,Proficient,Site A,efficient_idle
+OP-014,Operator 14,9,Proficient,Site B,hazard_aware
+OP-015,Operator 15,2,Proficient,Site A,experienced_safe
+OP-016,Operator 16,10,Proficient,Site B,blind_spot
+OP-017,Operator 17,7,Proficient,Site A,new_cautious
+OP-018,Operator 18,1,Proficient,Site B,efficient_idle
+OP-019,Operator 19,1,Proficient,Site A,hazard_aware
+OP-020,Operator 20,2,Proficient,Site B,experienced_safe
