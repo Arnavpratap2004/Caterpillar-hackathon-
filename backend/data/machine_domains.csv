@@ -1,0 +1,3 @@
+domain,name,phases,primary_metrics
+EXCAVATION_LOAD,Excavation / Loading,ACQUIRE|LIFT|SWING|DUMP|RETURN,cycle_time|control_precision|idle_time|hazard_response|safety_behavior
+HAUL_TRANSPORT,Haul / Transport,LOAD|TRAVEL_LOADED|QUEUE_SPOT|DUMP|TRAVEL_EMPTY|RETURN,cycle_time|queue_time|reaction_latency|stop_response|efficiency

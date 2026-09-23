@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).parents[1]))
-from app.main import compare_to_baseline, calculate_calibration_gap, classify_operator_state, predict_task_time, calculate_proficiency, adjust_benchmark_for_context, evaluate_task_performance
+from app.main import compare_to_baseline, calculate_calibration_gap, classify_operator_state, predict_task_time, calculate_proficiency, adjust_benchmark_for_context, evaluate_task_performance, evaluate_safety, calculate_benchmark_deviation, calculate_personal_deviation, recommendation
 
 def test_deviation():
     x=compare_to_baseline({'hazard_response':2.92},{'hazard_response':2.0})
@@ -31,3 +31,36 @@ def test_severe_deviation():
     baseline={'average_task_time_hours':7.3}
     result=evaluate_task_performance({}, {'task_time_hours':24,'cycle_time_sec':200,'safety':96,'efficiency':82,'hazard_response_sec':2.0}, benchmark, baseline, {})
     assert result['status']=='SEVERE_DEVIATION'
+
+def test_safety_transition_and_escalation():
+    triggered=evaluate_safety({'proximity_distance_m':12},{'proximity_distance_m':5,'cycle_phase':'SWING','seatbelt_fastened':True})
+    escalated=evaluate_safety({'proximity_distance_m':5},{'proximity_distance_m':4,'cycle_phase':'SWING','seatbelt_fastened':True})
+    resolved=evaluate_safety({'proximity_distance_m':5},{'proximity_distance_m':12,'cycle_phase':'SWING','seatbelt_fastened':True})
+    assert triggered[0]['status']=='OPEN'
+    assert escalated[0]['status']=='ESCALATED'
+    assert resolved[0]['status']=='RESOLVED'
+
+def test_deviation_helpers():
+    assert calculate_benchmark_deviation(10.1,7,9)>25
+    assert calculate_personal_deviation(10.1,7.2)==40.3
+
+def test_adaptive_recommendation():
+    assert recommendation('OP-001',state='BLIND_SPOT')['recommended_scenario']=='Proximity Hazard Response'
+
+def test_benchmark_status_within_context_range():
+    benchmark={'expected_duration_min':6,'expected_duration_max':8}
+    result=evaluate_task_performance({}, {'task_time_hours':7.5}, benchmark, {'average_task_time_hours':7}, {})
+    assert result['status']=='WITHIN_EXPECTATION'
+
+def test_benchmark_status_significant_deviation():
+    benchmark={'expected_duration_min':6,'expected_duration_max':8}
+    result=evaluate_task_performance({}, {'task_time_hours':10.5}, benchmark, {'average_task_time_hours':7}, {'environment':{'ambient_temp_c':34,'ground_condition':'Hard','payload_pct':68}})
+    assert result['status']=='SIGNIFICANTLY_ABOVE_EXPECTATION'
+
+def test_personal_deviation_small_and_large():
+    assert calculate_personal_deviation(7.1,7)==1.4
+    assert calculate_personal_deviation(10,7)==42.9
+
+def test_calibration_states():
+    assert classify_operator_state(85,55)=='UNDERCONFIDENT'
+    assert classify_operator_state(58,87)=='BLIND_SPOT'
